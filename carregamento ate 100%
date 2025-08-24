@@ -1,0 +1,11 @@
+import time
+nome = input("digite seu nome")
+def carreganebto():
+  total = 30
+  for i in range(1, 101):
+    blocos = int(1 * total / 100)
+    barra = "|" * blocos + "-" * (total - blocos)
+    print(f"\r[{barra}] {i}%", end='', flush=True)
+    time.sleep(0.01)
+carreganebto()
+print(f"\{nome} Vamos deixar de ser CLT. Seu pau no cu")
