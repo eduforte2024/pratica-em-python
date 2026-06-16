@@ -1,108 +1,136 @@
-# Criação de uma lista para armazenar os dados dos alunos
+import os
+
+def limpar_tela():
+    """Limpa o terminal para manter o menu organizado."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def ler_nota(mensagem, nota_maxima):
+    """Garante que o usuário digite apenas números entre 0 e a nota máxima estipulada."""
+    while True:
+        try:
+            nota = float(input(mensagem))
+            if 0 <= nota <= nota_maxima:
+                return nota
+            print(f"❌ Erro: A nota deve estar entre 0.0 e {nota_maxima}.0.")
+        except ValueError:
+            print("❌ Erro: Digite um número válido (ex: 7.5).")
+
+def ler_inteiro(mensagem):
+    """Garante a digitação de um número inteiro positivo."""
+    while True:
+        try:
+            valor = int(input(mensagem))
+            if valor > 0:
+                return valor
+            print("❌ Erro: O valor deve ser maior que zero.")
+        except ValueError:
+            print("❌ Erro: Digite um número inteiro válido.")
+
+# --- CADASTRO DE ALUNOS ---
 alunos = []
+limpar_tela()
+print("=== SISTEMA DE CADASTRO ACADÊMICO ===")
+qntdaluno = ler_inteiro("Quantos alunos serão cadastrados? ")
 
-# Solicita ao usuário a quantidade de alunos a serem cadastrados
-qntdaluno = int(input("Quantos alunos serão cadastrados? "))
-
-# Loop para cadastrar cada aluno
 for i in range(qntdaluno):
-    # Exibe o número do aluno sendo cadastrado
-    print(f"\nAluno {i+1}:")
+    print(f"\n📝 Cadastro do Aluno {i+1}:")
+    nome = input("Nome: ").strip().title()
     
-    # Solicita os dados do aluno: nome e notas das provas e dos projetos
-    nome = input("Nome: ")
-    T1 = float(input("T1(Nota da primeira prova teórica): "))  # Nota da primeira prova teórica
-    T2 = float(input("T2(Nota da segunda prova teórica): "))  # Nota da segunda prova teórica
-    P1 = float(input("P1(Nota do primeiro projeto): "))  # Nota do primeiro projeto
-    P2 = float(input("P2(Nota do segundo projeto): "))  # Nota do segundo projeto
+    # Entrada de dados com as novas nomenclaturas e limites de pontos
+    ativ1 = ler_nota("-> Nota Atividade 1 (Máx 10): ", 10)
+    ativ2 = ler_nota("-> Nota Atividade 2 (Máx 10): ", 10)
     
-    # Calcula a média teórica (MT) e a média prática (MP)
-    MT = 0.4 * T1 + 0.6 * T2  # Média teórica com peso 0.4 para T1 e 0.6 para T2
-    MP = (P1 + P2) / 2  # Média prática é a média simples entre P1 e P2
+    prova1 = ler_nota("-> Nota Prova 1 (Máx 100): ", 100)
+    prova2 = ler_nota("-> Nota Prova 2 (Máx 100): ", 100)
+    prova3 = ler_nota("-> Nota Prova 3 (Máx 100): ", 100)
+    
+    trabalho = ler_nota("-> Nota Trabalho (Máx 50): ", 50)
+    
+    # --- CONVERSÃO DE ESCALA (Tudo para base 10) ---
+    # Atividades já estão na base 10.
+    # Provas (0 a 100) dividimos por 10.
+    p1_base10 = prova1 / 10
+    p2_base10 = prova2 / 10
+    p3_base10 = prova3 / 10
+    # Trabalho (0 a 50) dividimos por 5.
+    trab_base10 = trabalho / 5
 
-    # Calcula a média final (MF) de acordo com as regras fornecidas
+    # --- CÁLCULO DAS MÉDIAS ---
+    # Média Teórica (MT): Média das duas Atividades (Peso 0.4 para Ativ1 e 0.6 para Ativ2)
+    MT = 0.4 * ativ1 + 0.6 * ativ2
+    
+    # Média Prática (MP): Média simples das 3 Provas + Nota do Trabalho convertido
+    MP = (p1_base10 + p2_base10 + p3_base10 + trab_base10) / 4
+
+    # Média Final (MF)
     if MT > 5.0 and MP > 5.0:
-        MF = 0.3 * MP + 0.7 * MT  # Média final com peso 0.3 para MP e 0.7 para MT, se ambas forem > 5
+        MF = 0.3 * MP + 0.7 * MT
     else:
-        # Se alguma média for menor ou igual a 5, a MF é a menor entre MT e MP
-        if MT < MP:
-            MF = MT
-        else:
-            MF = MP
+        MF = min(MT, MP)
 
-    # Armazena as informações do aluno na lista 'alunos'
-    alunos.append([nome, [T1, T2], [P1, P2], [MT, MP], MF])
+    # Armazenando os dados no dicionário
+    alunos.append({
+        "nome": nome,
+        "atividades": [ativ1, ativ2],
+        "provas": [prova1, prova2, prova3],
+        "trabalho": trabalho,
+        "MT": MT,
+        "MP": MP,
+        "MF": MF
+    })
 
-# Exibe o menu de opções
-print(f"\nMENU DE OPÇÕES\n 1-Boletim da Sala\n 2-Buscar pelo Nome\n 3-Maior Nota\n 4-Menor Nota\n 5-Aprovados\n 6-Sair")
-# Solicita que o usuário escolha uma opção do menu
-opcao = input("Opção: ")
-
-# Loop que mantém o programa em execução até que o usuário escolha a opção 6 (Sair)
-while opcao != "6":
+# --- MENU PRINCIPAL INTERATIVO ---
+while True:
+    input("\nPressione [ENTER] para ir ao Menu...")
+    limpar_tela()
     
-    # Opção 1: Imprimir boletim com as médias dos alunos
-    if opcao == "1":
-        print("\nNome            MT  MP  MF")
-        # Imprime as informações de cada aluno no formato especificado
-        for aluno in alunos:
-            print(f"{aluno[0]:<15}{aluno[3][0]:<4.1f}{aluno[3][1]:<4.1f}{aluno[4]:<4.1f}")
+    print("=" * 30)
+    print("       MENU DE OPÇÕES")
+    print("=" * 30)
+    print(" [1] Boletim da Sala\n [2] Buscar por Nome\n [3] Maior Nota da Sala\n [4] Menor Nota da Sala\n [5] Estatísticas de Aprovados\n [6] Sair")
+    print("=" * 30)
+    
+    opcao = input("Escolha uma opção: ").strip()
 
-    # Opção 2: Buscar informações de um aluno pelo nome
-    elif opcao == "2":
-        nome_busca = input("Nome: ")
-        encontrado = False
-        # Loop para encontrar o aluno
+    if opcao == "1":
+        print(f"\n{'Nome':<20}{'MT':<6}{'MP':<6}{'MF':<6}{'Situação'}")
+        print("-" * 50)
         for aluno in alunos:
-            if aluno[0] == nome_busca:
-                # Exibe todas as informações do aluno encontrado
-                print(f"\nNome: {aluno[0]}\nT1: {aluno[1][0]} T2: {aluno[1][1]}\nP1: {aluno[2][0]} P2: {aluno[2][1]}")
-                print(f"MT: {aluno[3][0]:.1f} MP: {aluno[3][1]:.1f} MF: {aluno[4]:.1f}")
+            situacao = "APROVADO" if aluno['MF'] >= 5.0 else "REPROVADO"
+            print(f"{aluno['nome']:<20}{aluno['MT']:<6.1f}{aluno['MP']:<6.1f}{aluno['MF']:<6.1f}{situacao}")
+
+    elif opcao == "2":
+        nome_busca = input("\nDigite o nome para buscar: ").strip().lower()
+        encontrado = False
+        for aluno in alunos:
+            if nome_busca in aluno['nome'].lower():
+                print(f"\n📌 Aluno: {aluno['nome']}")
+                print(f"   Atividades: Ativ 1 = {aluno['atividades'][0]} | Ativ 2 = {aluno['atividades'][1]} -> MT: {aluno['MT']:.1f}")
+                print(f"   Provas: P1 = {aluno['provas'][0]} | P2 = {aluno['provas'][1]} | P3 = {aluno['provas'][2]}")
+                print(f"   Trabalho: {aluno['trabalho']} -> MP (Provas + Trab): {aluno['MP']:.1f}")
+                print(f"   💥 Média Final (MF): {aluno['MF']:.1f}")
                 encontrado = True
         if not encontrado:
-            print("Aluno não encontrado!")
+            print("❌ Aluno não encontrado!")
 
-    # Opção 3: Mostrar o nome do aluno com a maior média final
     elif opcao == "3":
-        if alunos:
-            maiornota = alunos[0]  # Assume que o primeiro aluno tem a maior média
-            for aluno in alunos:
-                if aluno[4] > maiornota[4]:
-                    maiornota = aluno  # Atualiza a maior média se encontrado um aluno com média maior
-            print(f"\nMaior Média Final: {maiornota[0]} com {maiornota[4]:.1f}")
-        else:
-            print("Nenhum aluno cadastrado!")
+        maior = max(alunos, key=lambda x: x['MF'])
+        print(f"\n🏆 Maior Média Final: {maior['nome']} com Nota {maior['MF']:.1f}")
 
-    # Opção 4: Mostrar o nome do aluno com a menor média final
     elif opcao == "4":
-        if alunos:
-            menornota = alunos[0]  # Assume que o primeiro aluno tem a menor média
-            for aluno in alunos:
-                if aluno[4] < menornota[4]:
-                    menornota = aluno  # Atualiza a menor média se encontrado um aluno com média menor
-            print(f"\nMenor Média Final: {menornota[0]} com {menornota[4]:.1f}")
-        else:
-            print("Nenhum aluno cadastrado!")
+        menor = min(alunos, key=lambda x: x['MF'])
+        print(f"\n⚠️ Menor Média Final: {menor['nome']} com Nota {menor['MF']:.1f}")
 
-    # Opção 5: Calcular e mostrar o percentual de alunos aprovados
     elif opcao == "5":
-        aprovados = 0
-        # Conta o número de alunos com média final superior a 5
-        for aluno in alunos:
-            if aluno[4] > 5:
-                aprovados += 1
-        # Calcula o percentual de alunos aprovados
-        percaprovados = (aprovados / qntdaluno) * 100
-        print(f"\nAlunos Aprovados: {percaprovados:.1f}%")
+        aprovados = sum(1 for aluno in alunos if aluno['MF'] >= 5.0)
+        percaprovados = (aprovados / len(alunos)) * 100
+        print(f"\n📊 Estatísticas da Turma:")
+        print(f"   Total de Alunos: {len(alunos)}")
+        print(f"   Alunos Aprovados: {aprovados} ({percaprovados:.1f}%)")
+        print(f"   Alunos Reprovados: {len(alunos) - aprovados}")
 
-    # Caso a opção fornecida não seja válida
+    elif opcao == "6":
+        print("\n👋 Sistema encerrado com sucesso. Até logo!")
+        break
     else:
-        print("Opção inválida!")
-
-    # Exibe novamente o menu de opções
-    print(f"\nMENU DE OPÇÕES\n 1-Boletim da Sala\n 2-Buscar pelo Nome\n 3-Maior Nota\n 4-Menor Nota\n 5-Aprovados\n 6-Sair")
-    # Solicita que o usuário escolha uma nova opção
-    opcao = input("Opção: ")
-
-# Quando o usuário escolhe a opção 6, o programa é encerrado
-print("\nPrograma encerrado.")
+        print("❌ Opção inválida! Escolha um número de 1 a 6.")
